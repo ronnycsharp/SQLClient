@@ -6,6 +6,10 @@
 //  Copyright (c) 2013 Martin Rybak. All rights reserved.
 //
 
+// Modified 21.April 2015, by Ronny Weidemann
+// Image-SQL-DataType returns NSData
+// Image-Type, maximum supported length -> 4096 Byte
+
 #import "SQLClient.h"
 #import "sybfront.h"
 #import "sybdb.h"
@@ -186,7 +190,7 @@ struct COL
 			for (pcol = columns; pcol - columns < ncols; pcol++)
 			{
 				//Get column number
-				int c = pcol - columns + 1;
+                int c = ( int ) (pcol - columns + 1);
 				
 				//Get column metadata
 				pcol->name = dbcolname(connection, c);
@@ -248,7 +252,9 @@ struct COL
                                 
                             //Converting hexadecimal buffer into UIImage
                             }else if (pcol ->type == SYBIMAGE){
-                                NSString *hexString = [[NSString stringWithUTF8String:pcol->buffer] stringByReplacingOccurrencesOfString:@" " withString:@""];
+                                NSString *hexString = [[NSString stringWithUTF8String:pcol->buffer]
+                                                       stringByReplacingOccurrencesOfString:@" " withString:@""];
+                                
                                 NSMutableData *hexData = [[NSMutableData alloc] init];
                                 
                                 //Converting hex string to NSData
@@ -261,13 +267,11 @@ struct COL
                                     whole_byte = strtol(byte_chars, NULL, 16);
                                     [hexData appendBytes:&whole_byte length:1];
                                 }
-                                value = [UIImage imageWithData:hexData];
+                                value = hexData;
                             }else {
 								value = [NSString stringWithUTF8String:pcol->buffer];
 							}
-							//id value = [NSString stringWithUTF8String:pcol->buffer] ?: [NSNull null];
 							row[column] = value;
-                            //printf("%@=%@\n", column, value);
 						}
                         
                         //Add an immutable copy to the table
